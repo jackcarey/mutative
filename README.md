@@ -67,10 +67,10 @@ The parameters are different from the MutationObserver implementation. Instead o
 
 ### disconnect()
 
-Mutations that have been detected but not yet reported to observers are _not_ discarded. Observer callbacks are triggered before disconnection. This method pauses observation and callbacks.
+Mutations that have been detected but not yet reported to observers are _not_ discarded. Observer callbacks are triggered before disconnection. This method will either pause or remove observations and callbacks.
 
--   **When called with no arguments:** acts the same as [disconnect()](https://developer.mozilla.org/en-US/docs/Web/API/MutationObserver/disconnect), ignoring **all** _future_ observations. Note: this does not clear the internal selector list, so calling `observe()` again will continue with existing selectors.
--   **When passed with an argument:** The arguments follow the same formats as `observe()`'s `selectors` parameter. Only observers with the passed selectors are removed.
+-   **When called with no arguments:** acts the same as [disconnect()](https://developer.mozilla.org/en-US/docs/Web/API/MutationObserver/disconnect), ignoring **all** _future_ mutations. Note: this does not clear the internal selector list, so calling `observe()` again will continue with existing selectors.
+-   **When passed with an argument:** The arguments follow the same formats as `observe()`'s `selectors` parameter. Only observers with the passed selectors are removed. If no selectors remain, observation is paused (as if no arguments were passed).
 
 ### takeRecords()
 
