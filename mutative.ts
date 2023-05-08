@@ -1,7 +1,7 @@
-export default class mutative {
-    static #observerList: object;
-    static #mutationFn = (mutationList: MutationRecord[]) => {
-        Object.entries(mutative.#observerList).forEach(([selector, callback]) => {
+export default class Mutative {
+    static #observerList: Record<string, Function> = {};
+    static #mutationFn = (mutationList: MutationRecord[]): void => {
+        Object.entries(Mutative.#observerList).forEach(([selector, callback]) => {
             mutationList.forEach((mutationRecord: MutationRecord) => {
                 [
                     ...Array.from(mutationRecord?.addedNodes),
@@ -15,23 +15,20 @@ export default class mutative {
             });
         });
     };
-    static #bodyObserver = new MutationObserver(mutative.#mutationFn);
-    selectorList: string[];
-    static addSelectorObj(newObj) {
+    static #bodyObserver = new MutationObserver(Mutative.#mutationFn);
+    static #addSelectorObj(newObj): void {
         // const obj = Object.create(mutative.#observerList);
         // mutative.#observerList = { ...obj, ...newObj };
-        Object.assign(mutative.#observerList,newObj);
+        Object.assign(Mutative.#observerList, newObj);
     }
-    addSelectorFnPair(name, fn) {
+    static #addSelectorFnPair(name, fn): void {
         const obj = {};
         obj[name] = fn;
-        mutative.addSelectorObj(obj);
-        this.selectorList.push(name);
+        Mutative.#addSelectorObj(obj);
     }
-    constructor(selectorDict, callback) {
-        if (!mutative.#observerList) {
-            mutative.#observerList = {};
-            mutative.#bodyObserver.observe(document.body, {
+    static observe(selectorDict, callback): void {
+        if (!Mutative.#observerList) {
+            Mutative.#bodyObserver.observe(document.body, {
                 attributes: true,
                 subtree: true,
                 childList: true,
@@ -40,7 +37,6 @@ export default class mutative {
                 characterDataOldValue: true,
             });
         }
-        this.selectorList = [];
         const isString = typeof selectorDict === "string";
         const isArray = Array.isArray(selectorDict);
         if (!isString && !isArray && !(typeof selectorDict === "object")) {
@@ -52,10 +48,10 @@ export default class mutative {
             }
             if (isArray) {
                 selectorDict.forEach((name) => {
-                    this.addSelectorFnPair(name, callback);
+                    Mutative.#addSelectorFnPair(name, callback);
                 });
             } else {
-                this.addSelectorFnPair(selectorDict, callback);
+                Mutative.#addSelectorFnPair(selectorDict, callback);
             }
         } else {
             if (
@@ -65,17 +61,38 @@ export default class mutative {
             ) {
                 throw new Error("Must be string-function pairs");
             }
-            mutative.addSelectorObj(selectorDict);
-            this.selectorList = Object.keys(selectorDict);
+            Mutative.#addSelectorObj(selectorDict);
         }
     }
-    disconnect = () => {
-        mutative.#mutationFn(mutative.#bodyObserver.takeRecords());
-        this.selectorList
-            .filter((k) => Object.keys(mutative.#observerList).includes(k))
-            .forEach((k) => {
-                delete mutative.#observerList[k];
-            });
-    };
-    toString = () => this.selectorList.join(", ");
+    static disconnect(...selectors): void {
+        //finish mutation callbacks before removing selectors
+        Mutative.#mutationFn(Mutative.#bodyObserver.takeRecords());
+        if (!selectors?.length) {
+            Mutative.#bodyObserver.disconnect();
+        } else {
+            let items = [];
+            //allow many types of selectors to be passed to this function
+            const addItems = (selectorQueries) => {
+                selectorQueries.forEach((s) => {
+                    if (Array.isArray(s)) {
+                        s.forEach((i) => addItems(i));
+                    } else if (typeof s === "string") {
+                        items.push(s);
+                    } else {
+                        Object.keys(s).forEach((k) => items.push(k));
+                    }
+                });
+            };
+            addItems(selectors);
+            //only try to remove items that are actually part of the observer list
+            items
+                .filter((k) => Object.keys(Mutative.#observerList).includes(k))
+                .forEach((k) => {
+                    delete Mutative.#observerList[k];
+                });
+        }
+    }
+    static takeRecords(): MutationRecord[] {
+        return Array.from(Mutative.#bodyObserver.takeRecords());
+    }
 }

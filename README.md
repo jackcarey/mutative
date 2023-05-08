@@ -1,10 +1,10 @@
 # mutative
 
-Inspired by [ArrowJS](https://www.arrow-js.com/)'s `reactive` function that converts regular data objects into observed data objects, this class aims to do the same with DOM elements so that all mutations can trigger callbacks, whether they are part of ArrowJS or not.
+Persistent DOM mutation observations based on CSS query [selectors](https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_Selectors). It's essentially a wrapper for a global [MutationObserver](https://developer.mozilla.org/en-US/docs/Web/API/MutationObserver) that filters records to specific callbacks. The API is _similar_ to MutationObserver, but not the same.
 
-Essentially a wrapper for a global MutationObserver that filters records to specific callbacks.
+The advantage is that observers can be set up ahead of the existence of matching DOM elements, which is useful when working with SPAs or other reactive content.
 
-### **1.22kb minified, 800 bytes g-zipped.**
+### **~1.3kb minified, ~800 bytes gzipped.**
 
 ## Use
 
@@ -16,7 +16,7 @@ import mutative from "https://esm.sh/@jackcarey/mutative";
 // jsdelivr (with ESM)
 import mutative from "https://cdn.jsdelivr.net/npm/@jackcarey/mutative/+esm";
 //jsDelivr (with version)
-import mutative from "https://cdn.jsdelivr.net/npm/@jackcarey/mutative@1.1.0/mutative.min.js";
+import mutative from "https://cdn.jsdelivr.net/npm/@jackcarey/mutative@1.2.0/mutative.min.js";
 //GitHub (always latest code, possibly unstable)
 import mutative from "https://cdn.jsdelivr.net/gh/jackcarey/mutative/mutative.min.js";
 // local file
@@ -29,11 +29,14 @@ Then call it in a script tag:
 <script type="module">
 import mutative from "https://esm.sh/@jackcarey/mutative"
 
-const singleQuery = new mutative("p",(record)=>console.log(record));
+// pass a single selector and callback
+Mutative.observe("p",(record)=>console.log(record));
 
-const multipleQueries = new mutative(["p",".text","*[data-text]"],(record)=>console.log("text mutated",record));
+//pass multiple selectors with the same callback
+Mutative.observe(["p",".text","*[data-text]"],(record)=>console.log("text mutated",record));
 
-const objectQueries = new mutative({
+//pass multiple selectors at once with different callbacks
+Mutative.observe({
     "*[data-text]": (rec)=>console.log(rec),
     "p":(rec)=>alert("paragraph edited"),
     "output":(rec)=>console.log("calculation updated",rec)
@@ -43,6 +46,27 @@ const objectQueries = new mutative({
 
 Each callback is passed one argument, a [MutationRecord](https://developer.mozilla.org/en-US/docs/Web/API/MutationRecord).
 
+### observe()
+
+The parameters here differ from the MutationObserver implementation. Instead of a `target` and `options` there is `selectors` and `callback`.
+
+* `selectors` - Several types are allowed:
+    * `string` - a single CSS query selector.
+    * `string[]` - multiple CSS query selectors that use the same `callback`.
+    * `object` - CSS query selectors strings as keys, callbacks as values.
+* `callback` - Only required when `selectors` is a string or array of strings. A function that accepts a MutationRecord as it's only parameter.
+
+### disconnect()
+
+Mutations that have been detected but not yet reported to observers are _not_ discarded. Observer callbacks are triggered before disconnection.
+
+-   **When called with no arguments:** acts the same as [disconnect()](https://developer.mozilla.org/en-US/docs/Web/API/MutationObserver/disconnect), cancelling **all** *future* observations.
+-   **When passed with an argument:** The arguments follow the same formats as `observe()`'s `selectors` parameter. Only observers with the passed selectors are cancelled.
+
+### takeRecords()
+
+Takes all records from the Mutative object, use carefully. See: [takeRecords()](https://developer.mozilla.org/en-US/docs/Web/API/MutationObserver/takeRecords).
+
 ## How it works
 
-A global [MutationObserver](https://developer.mozilla.org/en-US/docs/Web/API/MutationObserver) is created with the first instance of `mutative`. It observes the `body` of the document and [MutationRecords](https://developer.mozilla.org/en-US/docs/Web/API/MutationRecord) are only passed to callbacks that have a matching [selector](https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_Selectors) for at least one of `target`, `addedNodes`, or `removedNodes`.
+A single MutationObserver is created on the document `body` with the first call of `mutative.observe()`. MutatioNrecords are only passed to callbacks that have a matching selector for at least one of `target`, `addedNodes`, or `removedNodes`.
