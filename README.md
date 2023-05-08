@@ -12,22 +12,22 @@ Import the package by using a CDN or saving it locally.
 
 ```javascript
 // esm.sh
-import mutative from "https://esm.sh/@jackcarey/mutative";
+import Mutative from "https://esm.sh/@jackcarey/mutative";
 // jsdelivr (with ESM)
-import mutative from "https://cdn.jsdelivr.net/npm/@jackcarey/mutative/+esm";
+import Mutative from "https://cdn.jsdelivr.net/npm/@jackcarey/mutative/+esm";
 //jsDelivr (with version)
-import mutative from "https://cdn.jsdelivr.net/npm/@jackcarey/mutative@1.3.1/mutative.min.js";
+import Mutative from "https://cdn.jsdelivr.net/npm/@jackcarey/mutative@1.3.1/mutative.min.js";
 //GitHub (always latest code, possibly unstable)
-import mutative from "https://cdn.jsdelivr.net/gh/jackcarey/mutative/mutative.min.js";
+import Mutative from "https://cdn.jsdelivr.net/gh/jackcarey/mutative/mutative.min.js";
 // local file
-import mutative from "./mutative.min.js";
+import Mutative from "./mutative.min.js";
 ```
 
 Then call it in a script tag:
 
 ```javascript
 <script type="module">
-import mutative from "https://esm.sh/@jackcarey/mutative"
+import Mutative from "https://esm.sh/@jackcarey/mutative"
 
 // pass a single selector and callback
 Mutative.observe("p",(record)=>console.log(record));
