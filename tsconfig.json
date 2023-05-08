@@ -1,0 +1,11 @@
+{
+  "compilerOptions": {
+    "target":"esnext",
+    "lib":["esnext","dom"],
+    "module":"esnext",
+    "alwaysStrict":true,
+    "removeComments":true,
+    "noUnusedLocals":true,
+    "noUnusedParameters":true,
+  }
+}

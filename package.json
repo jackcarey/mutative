@@ -1,0 +1,25 @@
+{
+  "name": "@jackcarey/mutative",
+  "version": "1.0.0",
+  "description": "A function for handling global DOM mutation observation",
+  "main": "mutative.min.js",
+  "type":"module",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jackcarey/mutative.git"
+  },
+  "keywords": [
+    "mutative",
+    "DOM",
+    "MutationObserver"
+  ],
+  "author": "Jack Carey (jackcarey.co.uk)",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/jackcarey/mutative/issues"
+  },
+  "homepage": "https://github.com/jackcarey/mutative#readme"
+}

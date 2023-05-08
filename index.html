@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Mutative</title>
+        <link rel="prefetch" href="https://esm.sh/@arrow-js/core" />
+        <link rel="prefetch" href="./mutative.js" />
+        <style>
+            :root {
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                text-align: center;
+                vertical-align: middle;
+                font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+            }
+        </style>
+    </head>
+    <body>
+        <h1>Mutative</h1>
+        <p>Watch for changes to the DOM when new elements are added to the page.</p>
+        <hr />
+        <button
+            onclick="document.querySelector('#container').appendChild(document.createElement('p'))"
+        >
+            Add &lt;p&gt;
+        </button>
+        <button onclick="document.querySelectorAll('#container > p').forEach(p=>p.innerText = new Date())">
+            Update &lt;p&gt; content
+        </button>
+        <button onclick="document.querySelectorAll('#container > p').forEach(p=>p.dataset.now = new Date())">
+            Update &lt;p&gt; attributes
+        </button>
+        <hr />
+        <aside></aside>
+        <main id="container"></main>
+        <script type="module">
+            import mutative from "./mutative.js";
+            // Start your app here!
+            const mutInstance = new mutative("p", (evt) => {
+                console.log("MUT EVT", evt);
+            });
+        </script>
+    </body>
+</html>
