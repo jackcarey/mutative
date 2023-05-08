@@ -16,7 +16,18 @@ export default class mutative {
         });
     };
     static #bodyObserver = new MutationObserver(mutative.#mutationFn);
-    selectorList: string[] = [];
+    selectorList: string[];
+    static addSelectorObj(newObj) {
+        // const obj = Object.create(mutative.#observerList);
+        // mutative.#observerList = { ...obj, ...newObj };
+        Object.assign(mutative.#observerList,newObj);
+    }
+    addSelectorFnPair(name, fn) {
+        const obj = {};
+        obj[name] = fn;
+        mutative.addSelectorObj(obj);
+        this.selectorList.push(name);
+    }
     constructor(selectorDict, callback) {
         if (!mutative.#observerList) {
             mutative.#observerList = {};
@@ -29,6 +40,7 @@ export default class mutative {
                 characterDataOldValue: true,
             });
         }
+        this.selectorList = [];
         const isString = typeof selectorDict === "string";
         const isArray = Array.isArray(selectorDict);
         if (!isString && !isArray && !(typeof selectorDict === "object")) {
@@ -38,20 +50,22 @@ export default class mutative {
             if (typeof callback !== "function") {
                 throw new Error("callback must be a function");
             }
-            (isArray ? selectorDict : [selectorDict]).forEach((query) => {
-                mutative.#observerList[query] == callback;
-                this.selectorList.push(query);
-            });
+            if (isArray) {
+                selectorDict.forEach((name) => {
+                    this.addSelectorFnPair(name, callback);
+                });
+            } else {
+                this.addSelectorFnPair(selectorDict, callback);
+            }
         } else {
             if (
                 Object.entries(selectorDict).some(
                     ([key, fn]) => typeof key !== "string" || typeof fn !== "function"
                 )
             ) {
-                throw new Error("All entries must be string-function pairs");
+                throw new Error("Must be string-function pairs");
             }
-            const obj = Object.create(mutative.#observerList);
-            mutative.#observerList = { obj, ...selectorDict };
+            mutative.addSelectorObj(selectorDict);
             this.selectorList = Object.keys(selectorDict);
         }
     }

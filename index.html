@@ -5,6 +5,10 @@
         <meta http-equiv="X-UA-Compatible" content="IE=edge" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <title>Mutative</title>
+        <link
+            rel="icon"
+            href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🧟</text></svg>"
+        />
         <link rel="prefetch" href="https://esm.sh/@arrow-js/core" />
         <link rel="prefetch" href="./mutative.js" />
         <style>
@@ -16,10 +20,25 @@
                 vertical-align: middle;
                 font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
             }
+            div:has(output) {
+                font-family: "Courier New", Courier, monospace;
+                border-radius: 0.5em;
+                background-color: beige;
+                min-height: 1em;
+                width: 100%;
+                padding: 0.25ch 0.25em;
+            }
+            output {
+                width: 90%;
+            }
+            main > * {
+                border: 1px solid lightskyblue;
+            }
         </style>
     </head>
     <body>
         <h1>Mutative</h1>
+        <p><a href="https://github.com/jackcarey/mutative">jackcarey/mutative - GitHub</a></p>
         <p>Watch for changes to the DOM when new elements are added to the page.</p>
         <hr />
         <button
@@ -27,20 +46,91 @@
         >
             Add &lt;p&gt;
         </button>
-        <button onclick="document.querySelectorAll('#container > p').forEach(p=>p.innerText = new Date())">
-            Update &lt;p&gt; content
+        <button
+            onclick="document.querySelector('#container').appendChild(document.createElement('span'))"
+        >
+            Add &lt;span&gt;
         </button>
-        <button onclick="document.querySelectorAll('#container > p').forEach(p=>p.dataset.now = new Date())">
-            Update &lt;p&gt; attributes
+        <button
+            onclick="document.querySelector('#container').appendChild(document.createElement('blockquote'))"
+        >
+            Add &lt;blockquote&gt;
+        </button>
+        <button
+            onclick="document.querySelector('#container').appendChild(document.createElement('code'))"
+        >
+            Add &lt;code&gt;
+        </button>
+        <button
+            onclick="document.querySelector('#container').appendChild(document.createElement('pre'))"
+        >
+            Add &lt;pre&gt;
         </button>
         <hr />
-        <aside></aside>
+        <button
+            onclick="document.querySelectorAll('#container > *').forEach(el=>el.innerText = Math.random())"
+        >
+            Update content
+        </button>
+        <button
+            onclick="document.querySelectorAll('#container > *').forEach(el=>el.dataset.now = new Date())"
+        >
+            Update attributes
+        </button>
+        <button
+            onclick="document.querySelector('#container').firstChild.remove()"
+        >
+            Remove first
+        </button>
+        <hr />
+        <p>
+            This output only updates in response to mutations, showing only the last 5 entries. See
+            the console for more details.
+        </p>
+        <div>
+            <output></output>
+        </div>
+        <hr />
         <main id="container"></main>
         <script type="module">
             import mutative from "./mutative.js";
             // Start your app here!
-            const mutInstance = new mutative("p", (evt) => {
-                console.log("MUT EVT", evt);
+            let logEntries = [];
+            function logMutation(msg, record) {
+                console.log(msg, record);
+                const nodeStr = (node) => {
+                    if (!node) {
+                        return "";
+                    }
+                    const attrs = node?.attributes
+                        ? Array.from(node.attributes)?.map(
+                              (attr) => `${attr.name}: '${attr.value}'`
+                          )
+                        : "";
+                    return `${node.nodeName}${attrs.length ? ` | ${attrs.join(", ")}` : ""}`;
+                };
+                const tgt = nodeStr(record?.target);
+                const added = Array.from(record?.addedNodes)?.map((n) => nodeStr(n));
+                const removed = Array.from(record?.removedNodes)?.map((n) => nodeStr(n));
+                logEntries.push(
+                    `\n${msg} | ${record.type} | target: ${tgt}${added.length ? ` | added: ${added}` : ""}${
+                        removed.length ? ` | removed: ${removed}` : ""
+                    }`
+                );
+                logEntries = logEntries.splice(-5);
+                document.querySelector("output").innerText = logEntries.join("\n\n");
+            }
+            const mutP = new mutative("p", (evt) => {
+                logMutation("P mutation", evt);
+            });
+
+            const mutMulti = new mutative(["span", "blockquote"], (evt) => {
+                logMutation("Multi mutation", evt);
+            });
+
+            const mutObj = new mutative({
+                code: (r) => logMutation(`code`, r),
+                pre: (r) => logMutation(`pre`, r),
             });
         </script>
     </body>
