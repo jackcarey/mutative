@@ -1,6 +1,6 @@
 {
   "name": "@jackcarey/mutative",
-  "version": "1.2.0",
+  "version": "1.3.1",
   "description": "A function for handling global DOM mutation observation",
   "main": "mutative.min.js",
   "type":"module",

@@ -37,8 +37,12 @@
         </style>
     </head>
     <body>
-        <h1>🧟<br/>Mutative</h1>
-        <p><a href="https://github.com/jackcarey/mutative" target="_blank">GitHub - jackcarey/mutative</a></p>
+        <h1>🧟<br />Mutative Demo</h1>
+        <p>
+            <b>Instructions: </b><a href="https://github.com/jackcarey/mutative" target="_blank"
+                >GitHub - jackcarey/mutative</a
+            >
+        </p>
         <p>Persistent DOM mutation observations based on CSS query selectors.</p>
         <hr />
         <button
@@ -77,12 +81,12 @@
         >
             Update attributes
         </button>
-        <button
-            onclick="document.querySelector('#container').firstChild.remove()"
-        >
+        <button onclick="document.querySelector('#container')?.firstChild?.remove()">
             Remove first
         </button>
+        <button id="toggleObs">Pause Observations</button>
         <hr />
+        <h2>Log</h2>
         <p>
             This output only updates in response to mutations, showing only the last 5 entries. See
             the console for more details.
@@ -91,9 +95,10 @@
             <output></output>
         </div>
         <hr />
+        <h2>Elements</h2>
         <main id="container"></main>
         <script type="module">
-            import mutative from "./mutative.js";
+            import Mutative from "./mutative.js";
             // Start your app here!
             let logEntries = [];
             function logMutation(msg, record) {
@@ -113,25 +118,37 @@
                 const added = Array.from(record?.addedNodes)?.map((n) => nodeStr(n));
                 const removed = Array.from(record?.removedNodes)?.map((n) => nodeStr(n));
                 logEntries.push(
-                    `\n${msg} | ${record.type} | target: ${tgt}${added.length ? ` | added: ${added}` : ""}${
-                        removed.length ? ` | removed: ${removed}` : ""
-                    }`
+                    `\n${msg} | ${record.type} | target: ${tgt}${
+                        added.length ? ` | added: ${added}` : ""
+                    }${removed.length ? ` | removed: ${removed}` : ""}`
                 );
                 logEntries = logEntries.splice(-5);
                 document.querySelector("output").innerText = logEntries.join("\n\n");
             }
-            const mutP = new mutative("p", (evt) => {
-                logMutation("P mutation", evt);
-            });
+            (() => {
+                Mutative.observe("p", (evt) => {
+                    logMutation("P mutation", evt);
+                });
 
-            const mutMulti = new mutative(["span", "blockquote"], (evt) => {
-                logMutation("Multi mutation", evt);
-            });
+                Mutative.observe(["span", "blockquote"], (evt) => {
+                    logMutation("Multi mutation", evt);
+                });
 
-            const mutObj = new mutative({
-                code: (r) => logMutation(`code`, r),
-                pre: (r) => logMutation(`pre`, r),
-            });
+                Mutative.observe({
+                    code: (r) => logMutation(`code`, r),
+                    pre: (r) => logMutation(`pre`, r),
+                });
+
+                document.getElementById("toggleObs").addEventListener("click", (evt) => {
+                    if (Mutative.isObserving) {
+                        Mutative.disconnect();
+                        evt.target.innerText = "Resume observing";
+                    } else {
+                        Mutative.observe();
+                        evt.target.innerText = "Pause observing";
+                    }
+                });
+            })();
         </script>
     </body>
 </html>
