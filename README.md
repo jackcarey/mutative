@@ -1,3 +1,5 @@
+⚠️ Now maintained as part of https://github.com/jackcarey/web-components/
+
 # 🧟 Mutative
 
 Persistent DOM mutation observations based on CSS query [selectors](https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_Selectors). It's essentially a wrapper for a global [MutationObserver](https://developer.mozilla.org/en-US/docs/Web/API/MutationObserver) that filters records to specific callbacks. The API is _similar_ to MutationObserver, but not the same.
